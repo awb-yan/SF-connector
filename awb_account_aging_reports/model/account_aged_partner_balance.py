@@ -122,37 +122,3 @@ class report_account_aged_partner(models.AbstractModel):
             }
             lines.append(total_line)
         return lines
-
-class report_account_aged_receivable(models.AbstractModel):
-    _inherit = "account.aged.receivable"
-    _description = "Aged Receivable"
-
-    def _get_columns_name(self, options):
-        columns = super(report_account_aged_receivable, self)._get_columns_name(options)
-        columns.insert(1, {'name': _("Trade Receivables (Active)"), 'class': '', 'style': 'text-align:center; white-space:nowrap;'})
-        columns.insert(2, {'name': _("Trade Receivables (Disconnect)"), 'class': '', 'style': 'white-space:nowrap;'})
-        return columns
-
-    def _get_lines(self, options, line_id=None):
-        lines = super(report_account_aged_receivable, self)._get_lines(options, line_id)
-        
-        # Looping Child Lines
-        for line in lines:
-            columns = line['columns']
-            if line.get('class', '') == 'date':
-                _logger.debug(f'Child Lines {line}')
-                
-                # YAN: this part will populate the new columns
-                item = self.env['account.move.line'].browse(line['id'])
-                move_item = item.move_id
-                ref_no = move_item.ref if move_item.ref else ''
-                columns.insert(0, {'name': ref_no})
-
-        # Looping Parent Lines
-        for line in lines:
-            _logger.debug(f'Parent Lines {line}')
-            columns = line['columns']
-            if line.get('class', '') != 'date':
-                columns.insert(1, {'name': ''})
-
-        return lines
